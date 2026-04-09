@@ -2,16 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import jobs,notes,analytics
 
-app = FastAPI(
-    title="job tracker API",
-    description="backend for the job tracker app",
-    version="1.0.0"
-)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["http://localhost:3000"],
-    allow_credentials = True,
+    allow_origins = ["*"],
+    allow_credentials = False,
     allow_methods = ["*"],
     allow_headers = ["*"],
 )
