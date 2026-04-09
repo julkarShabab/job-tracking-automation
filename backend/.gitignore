@@ -1,0 +1,19 @@
+# .gitignore
+# Git reads this file and SKIPS everything listed here
+# This is how we protect our secrets
+
+# Never push the .env file — it has our real keys
+.env
+
+# Never push the virtual environment folder — it's huge and unnecessary
+venv/
+env/
+
+# Python cache files — auto-generated, not needed in git
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store        # Mac system file
+Thumbs.db        # Windows system file
