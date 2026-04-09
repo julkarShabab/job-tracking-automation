@@ -19,7 +19,7 @@ def get_analytics():
     success_rate = round((offers/total*100),1) if total > 0 else 0
 
     return{
-        "total_application": total,
+        "total_applications": total,
         "interviews": interviews,
         "offers":offers,
         "rejected":rejected,
