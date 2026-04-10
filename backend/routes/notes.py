@@ -22,7 +22,7 @@ def update_note(note_id:str,note: NoteUpdate):
     if not update_data:
         raise HTTPException(status_code=400,detail="no data provided")
     
-    response = supabase.table("jobs").update(update_data).eq("id",note_id).execute()
+    response = supabase.table("notes").update(update_data).eq("id",note_id).execute()
 
     if not response.data:
         raise HTTPException(status_code=404,detail="note not found")
