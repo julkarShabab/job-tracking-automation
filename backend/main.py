@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import jobs, notes, analytics, timeline  # add timeline here
+from routes import jobs, notes, analytics, timeline,ai
 
 app = FastAPI()
 
@@ -23,7 +23,8 @@ app.add_middleware(
 app.include_router(jobs.router, prefix="/api/jobs", tags=["Jobs"])
 app.include_router(notes.router, prefix="/api/notes", tags=["Notes"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
-app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])  # add this
+app.include_router(timeline.router, prefix="/api/timeline", tags=["Timeline"])
+app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
 
 @app.get("/")
 def root():

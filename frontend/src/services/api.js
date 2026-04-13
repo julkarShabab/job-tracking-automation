@@ -31,3 +31,7 @@ export const getAnalytics = () => api.get('/api/analytics/')
 export const getTimeline = (jobId) => api.get(`/api/timeline/${jobId}`)
 export const createTimelineEntry = (data) => api.post('/api/timeline/', data)
 export const deleteTimelineEntry = (id) => api.delete(`/api/timeline/${id}`)
+
+export const analyzeJobAI = (data) => api.post('/api/ai/analyze', data)
+export const cvMatchAI = (data) => api.post('/api/ai/cv-match', data)
+export const coverLetterAI = (data) => api.post('/api/ai/cover-letter', data)
