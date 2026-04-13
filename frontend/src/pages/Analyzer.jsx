@@ -107,225 +107,306 @@ function Analyzer() {
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">AI Job Tools</h1>
+    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {/* ── Header ── */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
+        <h1 className="text-3xl font-bold">AI Job Tools</h1>
+        <p className="text-blue-100 mt-1 text-sm">Analyze jobs, match your CV, and generate cover letters instantly.</p>
+      </div>
 
-      {/* ───────── TOP SECTION ───────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+          {error}
+        </div>
+      )}
+
+      {/* ── Step Cards ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Step 1 */}
-        <div className="md:col-span-2 bg-white border rounded-xl p-6 space-y-4">
-          <h2 className="text-base font-semibold text-gray-800">Step 1 — Job Description</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">1</div>
+            <h2 className="font-semibold text-gray-800">Job Description</h2>
+          </div>
+          <p className="text-xs text-gray-400">Paste the job description below to get started.</p>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={12}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            rows={10}
+            placeholder="Paste job description here..."
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
           />
           <button
             onClick={handleAnalyze}
             disabled={analyzing || !description.trim()}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
           >
-            {analyzing ? 'Analyzing...' : 'Analyze Job'}
+            {analyzing ? '⏳ Analyzing...' : '🔍 Analyze Job'}
           </button>
         </div>
 
         {/* Step 2 */}
-        <div className="bg-white border rounded-xl p-6 space-y-4">
-          <h2 className="text-base font-semibold text-gray-800">Step 2 — Upload CV</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center">2</div>
+            <h2 className="font-semibold text-gray-800">Upload CV</h2>
+          </div>
+          <p className="text-xs text-gray-400">Upload your CV to match it and generate a cover letter.</p>
 
-          <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer hover:border-blue-400">
-            <input type="file" onChange={handleCVUpload} className="hidden" />
-            {cvFileName ? (
-              <p className="text-green-600 font-medium">{cvFileName}</p>
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-8 cursor-pointer transition-colors bg-gray-50">
+            <input type="file" accept=".pdf,.docx" onChange={handleCVUpload} className="hidden" />
+            {extracting ? (
+              <p className="text-sm text-blue-500 font-medium">Extracting text...</p>
+            ) : cvFileName ? (
+              <div className="text-center space-y-1">
+                <p className="text-sm text-green-600 font-semibold">{cvFileName}</p>
+                <p className="text-xs text-gray-400">{cvText.split(' ').length} words extracted</p>
+                <p className="text-xs text-blue-400">Click to change</p>
+              </div>
             ) : (
-              <p className="text-gray-500">Upload CV</p>
+              <div className="text-center space-y-1">
+                <p className="text-2xl">📄</p>
+                <p className="text-sm text-gray-500">Click to upload PDF or DOCX</p>
+                <p className="text-xs text-gray-400">Supports .pdf and .docx</p>
+              </div>
             )}
           </label>
 
           {cvText && (
-            <>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your Name"
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              />
-
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600">Your Name <span className="text-gray-400">(for cover letter)</span></label>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 mt-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                />
+              </div>
               <button
                 onClick={handleMatch}
                 disabled={matching || !analysis}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
               >
-                Match CV
+                {matching ? '⏳ Matching...' : '🎯 Match CV to Job'}
               </button>
-
               <button
                 onClick={handleGenerate}
                 disabled={generating || !analysis}
-                className="w-full bg-green-600 text-white py-2 rounded-lg"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
               >
-                Generate Cover Letter
+                {generating ? '⏳ Generating...' : '✉️ Generate Cover Letter'}
               </button>
-            </>
+              {!analysis && (
+                <p className="text-xs text-gray-400 text-center">Analyze a job first to enable these</p>
+              )}
+            </div>
+          )}
+
+          {!cvText && !extracting && (
+            <p className="text-xs text-gray-400 text-center">Upload your CV to unlock matching and cover letter generation</p>
           )}
         </div>
       </div>
 
-      {/* ───────── SIDE-BY-SIDE RESULTS ───────── */}
+      {/* ── Analysis Results ── */}
+      {/* ── Analysis + Match Side by Side ── */}
       {(analysis || matchResult) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          {/* ───── ANALYSIS ───── */}
+          {/* ── Analysis Results ── */}
           {analysis && (
-            <div className="space-y-4">
-              <h2 className="text-base font-semibold text-gray-800">Analysis</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                Analysis Results
+              </h2>
 
-              <div className="space-y-4">
+              {analysis.summary && (
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                  <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-1">Summary</p>
+                  <p className="text-sm text-gray-700">{analysis.summary}</p>
+                </div>
+              )}
 
-                {analysis.summary && (
-                  <div className="bg-white border rounded-xl p-4">
-                    <h3 className="font-semibold mb-2">Summary</h3>
-                    <p className="text-sm text-gray-600">{analysis.summary}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {analysis.experience_level && (
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400">Experience</p>
+                    <p className="text-sm font-semibold text-blue-600 mt-0.5">{analysis.experience_level}</p>
                   </div>
                 )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  {analysis.experience_level && (
-                    <div className="bg-white border rounded-xl p-4">
-                      <p className="text-xs text-gray-500">Experience</p>
-                      <p className="text-blue-600 font-medium">{analysis.experience_level}</p>
-                    </div>
-                  )}
-
-                  {analysis.job_type && (
-                    <div className="bg-white border rounded-xl p-4">
-                      <p className="text-xs text-gray-500">Job Type</p>
-                      <p className="text-blue-600 font-medium">{analysis.job_type}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {analysis.location && (
-                    <div className="bg-white border rounded-xl p-4">
-                      <p className="text-xs text-gray-500">Location</p>
-                      <p>{analysis.location}</p>
-                    </div>
-                  )}
-
-                  {analysis.salary && (
-                    <div className="bg-white border rounded-xl p-4">
-                      <p className="text-xs text-gray-500">Salary</p>
-                      <p className="text-green-600 font-medium">{analysis.salary}</p>
-                    </div>
-                  )}
-                </div>
-
-                {analysis.skills?.length > 0 && (
-                  <div className="bg-white border rounded-xl p-4">
-                    <h3 className="mb-2 font-semibold">Skills</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {analysis.skills.map((s, i) => (
-                        <span
-                          key={i}
-                          className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs whitespace-nowrap"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
+                {analysis.job_type && (
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400">Job Type</p>
+                    <p className="text-sm font-semibold text-blue-600 mt-0.5">{analysis.job_type}</p>
+                  </div>
+                )}
+                {analysis.location && (
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400">Location</p>
+                    <p className="text-sm font-semibold text-gray-700 mt-0.5">{analysis.location}</p>
+                  </div>
+                )}
+                {analysis.salary && (
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400">Salary</p>
+                    <p className="text-sm font-semibold text-emerald-600 mt-0.5">{analysis.salary}</p>
                   </div>
                 )}
               </div>
+
+              {analysis.apply_method &&
+                analysis.apply_method.type !== 'not mentioned' &&
+                analysis.apply_method.value &&
+                analysis.apply_method.value !== 'null' &&
+                analysis.apply_method.value !== null && (
+                  <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-2">How to Apply</p>
+                    {analysis.apply_method.type === 'email' && (
+                      <a href={"mailto:" + analysis.apply_method.value} className="text-sm text-indigo-600 hover:underline">
+                        {analysis.apply_method.value}
+                      </a>
+                    )}
+                    {(analysis.apply_method.type === 'link' || analysis.apply_method.type === 'both') && (
+                      <a href={analysis.apply_method.value} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 hover:underline font-medium">
+                        Apply Here →
+                      </a>
+                    )}
+                  </div>
+                )}
+
+              {analysis.skills?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Required Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.skills.map((s, i) => (
+                      <span key={i} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {analysis.benefits?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Benefits</p>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.benefits.map((b, i) => (
+                      <span key={i} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">{b}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {analysis.keywords?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Keywords</p>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.keywords.map((k, i) => (
+                      <span key={i} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">{k}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* ───── MATCH ───── */}
+          {/* ── Match Results ── */}
           {matchResult && (
-            <div className="space-y-4">
-              <h2 className="text-base font-semibold text-gray-800">Match</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block"></span>
+                CV Match Results
+              </h2>
 
-              <div className="space-y-4">
-
-                <div className="bg-white border rounded-xl p-4">
-                  <p className="text-xs text-gray-500">Match Score</p>
-                  <p className="text-3xl font-bold">{matchResult.match_score}%</p>
-                </div>
-
-                {matchResult.summary && (
-                  <div className="bg-white border rounded-xl p-4">
-                    <h3 className="mb-2 font-semibold">Summary</h3>
-                    <p className="text-sm text-gray-600">{matchResult.summary}</p>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <p className="text-xs text-gray-400 mb-2">Match Score</p>
+                <div className="flex items-center gap-4">
+                  <span className={`text-4xl font-bold ${matchResult.match_score >= 70 ? 'text-emerald-500' :
+                      matchResult.match_score >= 40 ? 'text-yellow-500' : 'text-red-500'
+                    }`}>
+                    {matchResult.match_score}%
+                  </span>
+                  <div className="flex-1 bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className={`h-2.5 rounded-full transition-all ${matchResult.match_score >= 70 ? 'bg-emerald-500' :
+                          matchResult.match_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                      style={{ width: matchResult.match_score + '%' }}
+                    />
                   </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4 items-stretch">
-
-                  {/* Matching */}
-                  {matchResult.matching_skills?.length > 0 && (
-                    <div className="bg-white border rounded-xl p-4 h-full flex flex-col">
-                      <h3 className="mb-2 font-semibold">Matching</h3>
-                      <div className="flex flex-wrap gap-2 content-start max-h-24 overflow-y-auto">
-                        {matchResult.matching_skills.map((s, i) => (
-                          <span
-                            key={i}
-                            className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs whitespace-nowrap"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Missing */}
-                  {matchResult.missing_skills?.length > 0 && (
-                    <div className="bg-white border rounded-xl p-4 h-full flex flex-col">
-                      <h3 className="mb-2 font-semibold">Missing</h3>
-                      <div className="flex flex-wrap gap-2 content-start max-h-24 overflow-y-auto">
-                        {matchResult.missing_skills.map((s, i) => (
-                          <span
-                            key={i}
-                            className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs whitespace-nowrap"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
-
-                {matchResult.recommendations?.length > 0 && (
-                  <div className="bg-white border rounded-xl p-4">
-                    <h3 className="mb-2 font-semibold">Recommendations</h3>
-                    <ul className="list-disc pl-5 text-sm text-gray-600">
-                      {matchResult.recommendations.map((r, i) => (
-                        <li key={i}>{r}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
+
+              {matchResult.summary && (
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                  <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-1">Summary</p>
+                  <p className="text-sm text-gray-700">{matchResult.summary}</p>
+                </div>
+              )}
+
+              {matchResult.matching_skills?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Matching Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {matchResult.matching_skills.map((s, i) => (
+                      <span key={i} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {matchResult.missing_skills?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Missing Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {matchResult.missing_skills.map((s, i) => (
+                      <span key={i} className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-medium">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {matchResult.recommendations?.length > 0 && (
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recommendations</p>
+                  {matchResult.recommendations.map((r, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-blue-400 mt-0.5 font-bold">→</span>
+                      {r}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
         </div>
       )}
 
-      {/* ───────── COVER LETTER ───────── */}
+      {/* ── Cover Letter ── */}
       {coverLetter && (
-        <div className="bg-white border rounded-xl p-6">
-          <h2 className="font-semibold mb-4">Cover Letter</h2>
-          <p className="whitespace-pre-wrap text-sm text-gray-700">
-            {coverLetter}
-          </p>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+              Generated Cover Letter
+            </h2>
+            <button
+              onClick={handleCopy}
+              className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-1.5 rounded-lg transition-all font-medium"
+            >
+              {copied ? '✅ Copied!' : '📋 Copy'}
+            </button>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{coverLetter}</p>
+          </div>
         </div>
       )}
+
     </div>
   )
 }
