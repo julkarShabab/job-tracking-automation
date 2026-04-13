@@ -35,3 +35,8 @@ export const deleteTimelineEntry = (id) => api.delete(`/api/timeline/${id}`)
 export const analyzeJobAI = (data) => api.post('/api/ai/analyze', data)
 export const cvMatchAI = (data) => api.post('/api/ai/cv-match', data)
 export const coverLetterAI = (data) => api.post('/api/ai/cover-letter', data)
+
+
+export const extractCV = (formData) => api.post('/api/ai/extract-cv', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+})

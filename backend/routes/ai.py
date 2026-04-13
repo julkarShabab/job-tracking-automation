@@ -1,4 +1,7 @@
-from fastapi import APIRouter,HTTPException
+import pdfplumber
+import docx
+import io
+from fastapi import APIRouter,HTTPException,UploadFile,File
 from pydantic import BaseModel
 from typing import Optional
 import os
@@ -95,7 +98,7 @@ def cv_match(req: CVMatchRequest):
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
     
-@router.post("cover-letter")
+@router.post("/cover-letter")
 def generate_cover_letter(req: CoverLetterRequest):
     try:
         system_prompt = """You are a professional cover letter writer.
@@ -115,6 +118,35 @@ def generate_cover_letter(req: CoverLetterRequest):
         
         result = call_groq(system_prompt,user_prompt)
         return {"cover_letter": result}
+    except Exception as e:
+        raise HTTPException(status_code=500,detail=str(e))
+    
+@router.post("/extract-cv")
+async def extract_cv(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        text = ""
+        
+        if file.filename.endswith(".pdf"):
+            with pdfplumber.open(io.BytesIO(contents)) as pdf:
+                for page in pdf.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text += extracted + "\n"
+        
+        elif file.filename.endswith(".docx"):
+            doc = docx.Document(io.BytesIO(contents))
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + "\n"
+                
+        else:
+            raise HTTPException(status_code=400,detail="Only PDF and DOCX files are supported")
+        if not text.strip():
+            raise HTTPException(status_code=400,detail="Could not extract text from file")
+        
+        return {"text": text.strip()}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500,detail=str(e))
 
