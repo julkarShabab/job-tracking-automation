@@ -110,7 +110,7 @@ function Analyzer() {
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
 
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
+      <div className="bg-linear-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold">AI Job Tools</h1>
         <p className="text-blue-100 mt-1 text-sm">Analyze jobs, match your CV, and generate cover letters instantly.</p>
       </div>
@@ -143,7 +143,7 @@ function Analyzer() {
             disabled={analyzing || !description.trim()}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
           >
-            {analyzing ? '⏳ Analyzing...' : '🔍 Analyze Job'}
+            {analyzing ? ' Analyzing...' : ' Analyze Job'}
           </button>
         </div>
 
@@ -190,14 +190,14 @@ function Analyzer() {
                 disabled={matching || !analysis}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
               >
-                {matching ? '⏳ Matching...' : '🎯 Match CV to Job'}
+                {matching ? ' Matching...' : ' Match CV to Job'}
               </button>
               <button
                 onClick={handleGenerate}
                 disabled={generating || !analysis}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
               >
-                {generating ? '⏳ Generating...' : '✉️ Generate Cover Letter'}
+                {generating ? ' Generating...' : ' Generate Cover Letter'}
               </button>
               {!analysis && (
                 <p className="text-xs text-gray-400 text-center">Analyze a job first to enable these</p>
@@ -398,7 +398,7 @@ function Analyzer() {
               onClick={handleCopy}
               className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-1.5 rounded-lg transition-all font-medium"
             >
-              {copied ? '✅ Copied!' : '📋 Copy'}
+              {copied ? ' Copied!' : ' Copy'}
             </button>
           </div>
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
