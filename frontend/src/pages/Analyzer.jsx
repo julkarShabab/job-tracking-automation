@@ -1,20 +1,37 @@
-import { useState } from "react"
-import { analyzeJobAI, cvMatchAI, coverLetterAI, extractCV } from '../services/api'
+import { useState, useEffect } from "react"
+import { analyzeJobAI, cvMatchAI, coverLetterAI, extractCV, flagJob, getAllJobs, createJob } from '../services/api'
+
+
+const extractCompanyName = (text) => {
+  if (!text) return "Unknown"
+
+  const patterns = [
+    /at\s+([A-Z][A-Za-z0-9&.\s]+)/i,
+    /join\s+([A-Z][A-Za-z0-9&.\s]+)/i,
+    /company[:\s]+([A-Z][A-Za-z0-9&.\s]+)/i
+  ]
+
+  for (let pattern of patterns) {
+    const match = text.match(pattern)
+    if (match && match[1]) {
+      return match[1].trim()
+    }
+  }
+
+  return "Unknown"
+}
 
 function Analyzer() {
-  // Step 1 — Job description and analysis
   const [description, setDescription] = useState('')
   const [analysis, setAnalysis] = useState(null)
   const [analyzing, setAnalyzing] = useState(false)
 
-  // Step 2 — CV upload and match
   const [cvText, setCvText] = useState('')
   const [cvFileName, setCvFileName] = useState('')
   const [extracting, setExtracting] = useState(false)
   const [matchResult, setMatchResult] = useState(null)
   const [matching, setMatching] = useState(false)
 
-  // Step 3 — Cover letter
   const [coverLetter, setCoverLetter] = useState('')
   const [generating, setGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -22,7 +39,13 @@ function Analyzer() {
 
   const [error, setError] = useState(null)
 
-  // Step 1 — Analyze job description
+  // ── Flag state ──
+  const [showFlagModal, setShowFlagModal] = useState(false)
+  const [jobs, setJobs] = useState([])
+  const [selectedJobId, setSelectedJobId] = useState('')
+  const [flagging, setFlagging] = useState(false)
+  const [flagged, setFlagged] = useState(false)
+
   const handleAnalyze = async () => {
     if (!description.trim()) return
     setAnalyzing(true)
@@ -30,6 +53,7 @@ function Analyzer() {
     setAnalysis(null)
     setMatchResult(null)
     setCoverLetter('')
+    setFlagged(false)
 
     try {
       const res = await analyzeJobAI({ description })
@@ -42,15 +66,12 @@ function Analyzer() {
     }
   }
 
-  // Step 2a — Upload and extract CV text
   const handleCVUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-
     setExtracting(true)
     setError(null)
     setCvFileName(file.name)
-
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -58,19 +79,17 @@ function Analyzer() {
       setCvText(res.data.text)
     } catch (err) {
       console.error(err)
-      setError('Failed to extract CV text. Make sure file is PDF or DOCX.')
+      setError('Failed to extract CV text.')
     } finally {
       setExtracting(false)
     }
   }
 
-  // Step 2b — Match CV to job
   const handleMatch = async () => {
     if (!cvText || !description) return
     setMatching(true)
     setError(null)
     setMatchResult(null)
-
     try {
       const res = await cvMatchAI({ cv: cvText, description })
       setMatchResult(res.data)
@@ -82,13 +101,11 @@ function Analyzer() {
     }
   }
 
-  // Step 3 — Generate cover letter
   const handleGenerate = async () => {
     if (!description) return
     setGenerating(true)
     setError(null)
     setCoverLetter('')
-
     try {
       const res = await coverLetterAI({ description, cv: cvText, name })
       setCoverLetter(res.data.cover_letter)
@@ -104,6 +121,57 @@ function Analyzer() {
     navigator.clipboard.writeText(coverLetter)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // ── Flag handlers ──
+  const handleOpenFlagModal = async () => {
+    try {
+      const res = await getAllJobs()
+      setJobs(res.data)
+      setSelectedJobId('')
+      setShowFlagModal(true)
+    } catch (err) {
+      setError('Failed to load jobs.')
+    }
+  }
+
+  const handleConfirmFlag = async () => {
+    setFlagging(true)
+
+    try {
+      let jobId = selectedJobId
+
+      // 🔥 AUTO CREATE JOB IF NONE SELECTED
+      if (!jobId) {
+        const companyName =
+          analysis?.company && analysis.company !== "Not mentioned"
+            ? analysis.company
+            : extractCompanyName(description)
+
+        const res = await createJob({
+          company: companyName,
+          role: analysis?.summary || "New Job",
+          description: description
+        })
+
+        jobId = res.data.id
+      }
+
+      await flagJob(jobId, {
+        is_flagged: true,
+        flagged_analysis: analysis,
+        flagged_match: matchResult || null
+      })
+
+      setFlagged(true)
+      setShowFlagModal(false)
+
+    } catch (err) {
+      console.error(err)
+      setError('Failed to save job.')
+    } finally {
+      setFlagging(false)
+    }
   }
 
   return (
@@ -143,7 +211,7 @@ function Analyzer() {
             disabled={analyzing || !description.trim()}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
           >
-            {analyzing ? ' Analyzing...' : ' Analyze Job'}
+            {analyzing ? 'Analyzing...' : 'Analyze Job'}
           </button>
         </div>
 
@@ -190,14 +258,14 @@ function Analyzer() {
                 disabled={matching || !analysis}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
               >
-                {matching ? ' Matching...' : ' Match CV to Job'}
+                {matching ? 'Matching...' : 'Match CV to Job'}
               </button>
               <button
                 onClick={handleGenerate}
                 disabled={generating || !analysis}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
               >
-                {generating ? ' Generating...' : ' Generate Cover Letter'}
+                {generating ? 'Generating...' : 'Generate Cover Letter'}
               </button>
               {!analysis && (
                 <p className="text-xs text-gray-400 text-center">Analyze a job first to enable these</p>
@@ -211,7 +279,6 @@ function Analyzer() {
         </div>
       </div>
 
-      {/* ── Analysis Results ── */}
       {/* ── Analysis + Match Side by Side ── */}
       {(analysis || matchResult) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -219,10 +286,24 @@ function Analyzer() {
           {/* ── Analysis Results ── */}
           {analysis && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
-              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-                Analysis Results
-              </h2>
+
+              {/* Header + Flag button */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                  Analysis Results
+                </h2>
+                <button
+                  onClick={handleOpenFlagModal}
+                  disabled={flagged}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${flagged
+                    ? 'bg-amber-100 text-amber-600 cursor-default'
+                    : 'bg-gray-100 hover:bg-amber-50 hover:text-amber-600 text-gray-500'
+                    }`}
+                >
+                  {flagged ? ' Saved' : ' Save to Job'}
+                </button>
+              </div>
 
               {analysis.summary && (
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
@@ -325,14 +406,14 @@ function Analyzer() {
                 <p className="text-xs text-gray-400 mb-2">Match Score</p>
                 <div className="flex items-center gap-4">
                   <span className={`text-4xl font-bold ${matchResult.match_score >= 70 ? 'text-emerald-500' :
-                      matchResult.match_score >= 40 ? 'text-yellow-500' : 'text-red-500'
+                    matchResult.match_score >= 40 ? 'text-yellow-500' : 'text-red-500'
                     }`}>
                     {matchResult.match_score}%
                   </span>
                   <div className="flex-1 bg-gray-200 rounded-full h-2.5">
                     <div
                       className={`h-2.5 rounded-full transition-all ${matchResult.match_score >= 70 ? 'bg-emerald-500' :
-                          matchResult.match_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                        matchResult.match_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'
                         }`}
                       style={{ width: matchResult.match_score + '%' }}
                     />
@@ -382,7 +463,6 @@ function Analyzer() {
               )}
             </div>
           )}
-
         </div>
       )}
 
@@ -398,11 +478,50 @@ function Analyzer() {
               onClick={handleCopy}
               className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-1.5 rounded-lg transition-all font-medium"
             >
-              {copied ? ' Copied!' : ' Copy'}
+              {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
           <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
             <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{coverLetter}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Flag Modal ── */}
+      {showFlagModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md space-y-4">
+            <h2 className="text-base font-semibold text-gray-800">Save Analysis to a Job</h2>
+            <p className="text-sm text-gray-500">Select a job (optional). If none selected, a new job will be created.. The analysis and CV match result will be saved to it.</p>
+
+            <select
+              value={selectedJobId}
+              onChange={(e) => setSelectedJobId(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+            >
+              <option value="">Save as new job</option>
+              {jobs.map((job) => (
+                <option key={job.id} value={job.id}>
+                  {job.company} — {job.role}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowFlagModal(false)}
+                className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmFlag}
+                disabled={flagging}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white py-2.5 rounded-xl text-sm font-medium transition-all"
+              >
+                {flagging ? 'Saving...' : ' Save'}
+              </button>
+            </div>
           </div>
         </div>
       )}

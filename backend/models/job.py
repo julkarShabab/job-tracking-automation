@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,Any
 from datetime import date
 
 class JobCreate(BaseModel):
@@ -19,3 +19,8 @@ class JobUpdate(BaseModel):
     status: Optional[str] = None
     applied_date: Optional[date] = None
     deadline: Optional[date] = None
+    
+class FlagJob(BaseModel):
+    is_flagged: bool
+    flagged_analysis: Optional[Any] = None
+    flagged_match: Optional[Any]= None

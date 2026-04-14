@@ -46,6 +46,7 @@ def analyze_job(req: AnalyzeRequest):
         Extract information and return ONLY a valid JSON object with no markdown, no backticks, no extra text.
         The JSON must have exactly these fields:
         {
+            "company":"Company name or Not mentioned",
             "skills": ["skill1", "skill2"],
             "keywords": ["keyword1", "keyword2"],
             "experience_level": "Junior/Mid/Senior",
@@ -77,9 +78,14 @@ def cv_match(req: CVMatchRequest):
     try:
         system_prompt = """You are a CV and job description matcher.
         Compare the CV with the job description and return ONLY a valid JSON object with no markdown, no backticks.
+        IMPORTANT:
+        - Calculate a realistic match score between 0 and 100.
+        - The score must reflect how well the CV matches required skills and experience.
+        - Do NOT use a fixed number.
+        - Base the score on actual overlap of skills, experience, and keywords.
         The JSON must have exactly these fields:
         {
-            "match_score": 75,
+            "match_score": number between 0 and 100,
             "matching_skills": ["skill1", "skill2"],
             "missing_skills": ["skill1", "skill2"],
             "recommendations": ["recommendation1", "recommendation2"],

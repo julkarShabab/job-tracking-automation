@@ -40,3 +40,6 @@ export const coverLetterAI = (data) => api.post('/api/ai/cover-letter', data)
 export const extractCV = (formData) => api.post('/api/ai/extract-cv', formData, {
   headers: { 'Content-Type': 'multipart/form-data' }
 })
+
+export const flagJob = (id, data) => api.patch(`/api/jobs/${id}/flag`, data)
+export const getFlaggedJobs = () => api.get('/api/jobs/flagged/all')

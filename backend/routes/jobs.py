@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from db.database import supabase
-from models.job import JobCreate, JobUpdate
+from models.job import JobCreate, JobUpdate,FlagJob
 
 router = APIRouter()
 
@@ -59,3 +59,21 @@ def delete_job(job_id: str):
     if not response.data:
         raise HTTPException(status_code=404, detail="Job not found")
     return {"message": "Job deleted successfully"}
+
+
+@router.patch("/{job_id}/flag")
+def flag_job(job_id:str,flag_data:FlagJob):
+    response = supabase.table("jobs").update({
+        "is_flagged": flag_data.is_flagged,
+        "flagged_analysis": flag_data.flagged_analysis,
+        "flagged_match": flag_data.flagged_match
+    }).eq("id",job_id).execute()
+    
+    if not response.data:
+        raise HTTPException(status_code=404,detail="job not found")
+    return response.data[0]
+
+@router.get("/flagged/all")
+def get_flagged_jobs():
+    response = supabase.table("jobs").select("*").eq("is_flagged",True).execute()
+    return response.data
