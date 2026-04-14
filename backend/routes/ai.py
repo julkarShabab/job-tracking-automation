@@ -44,12 +44,20 @@ def analyze_job(req: AnalyzeRequest):
     try:
         system_prompt = """You are a job description analyzer. 
         Extract information and return ONLY a valid JSON object with no markdown, no backticks, no extra text.
+        IMPORTANT:
+        - Always try to identify the company name from the description.
+        - If the company is not clearly mentioned, return "Not mentioned".
+        - Do NOT guess random company names.
+        - Extract the exact years of experience mentioned in the job description (e.g., "2-4 years", "3+ years").
+        - Do NOT convert it into "Junior/Mid/Senior".
+        - If no experience is mentioned, return "Not mentioned".
+
         The JSON must have exactly these fields:
         {
             "company":"Company name or Not mentioned",
             "skills": ["skill1", "skill2"],
             "keywords": ["keyword1", "keyword2"],
-            "experience_level": "Junior/Mid/Senior",
+            "experience_required": "e.g. 2-4 years or Not mentioned",
             "job_type": "Full-time/Part-time/Remote/Contract",
             "location": "City, Country or Remote",
             "salary": "Salary range or Not mentioned",

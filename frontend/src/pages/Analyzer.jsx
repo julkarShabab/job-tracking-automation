@@ -313,10 +313,10 @@ function Analyzer() {
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                {analysis.experience_level && (
+                {analysis.experience_required && (
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
                     <p className="text-xs text-gray-400">Experience</p>
-                    <p className="text-sm font-semibold text-blue-600 mt-0.5">{analysis.experience_level}</p>
+                    <p className="text-sm font-semibold text-blue-600 mt-0.5">{analysis.experience_required}</p>
                   </div>
                 )}
                 {analysis.job_type && (
