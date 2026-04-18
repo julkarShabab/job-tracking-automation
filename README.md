@@ -28,7 +28,7 @@
 
 ---
 
-## 🧭 Overview
+##  Overview
 
 Job searching is chaotic — dozens of applications, scattered notes, no visibility into what's working.
 
